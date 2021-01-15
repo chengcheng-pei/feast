@@ -23,6 +23,10 @@ def create_grpc_channel(
 
     Returns: Returns a grpc.Channel
     """
+    options = [
+        ('grpc.max_send_message_length', 4194304*16),
+        ('grpc.max_receive_message_length', 419430*16),
+    ]
     if not url:
         raise ValueError("Unable to create gRPC channel. URL has not been defined.")
 
@@ -41,9 +45,9 @@ def create_grpc_channel(
             credentials = grpc.composite_channel_credentials(
                 credentials, grpc.metadata_call_credentials(auth_metadata_plugin),
             )
-        channel = grpc.secure_channel(url, credentials=credentials)
+        channel = grpc.secure_channel(url, credentials=credentials, options=options)
     else:
-        channel = grpc.insecure_channel(url)
+        channel = grpc.insecure_channel(url, options=options)
     try:
         grpc.channel_ready_future(channel).result(timeout=timeout)
         return channel
